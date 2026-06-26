@@ -5,6 +5,7 @@ const router = express.Router();
 const {
   createShop,
   getShops,
+    getShopByCode,
   getShopById,
   updateShop,
   deleteShop,
@@ -27,6 +28,11 @@ router.get(
 router.get(
   "/search",
   searchShops
+);
+
+router.get(
+  "/code/:shopCode",
+  getShopByCode
 );
 
 router.get("/:id", getShopById);

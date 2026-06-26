@@ -1,19 +1,25 @@
 const Shop = require("../models/Shop");
-
+const mongoose = require("mongoose");
 const createShop = async (req, res) => {
   try {
-    const shop = await Shop.create(req.body);
+    // const shop = await Shop.create(req.body);
+    req.body.area = req.body.length * req.body.width;
+
+const shop = await Shop.create(req.body);
 
     res.status(201).json({
       success: true,
       shop,
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
+  console.error(error);
+
+  res.status(500).json({
+    success: false,
+    message: error.message,
+    stack: error.stack,
+  });
+}
 };
 
 const getShops = async (req, res) => {
@@ -48,8 +54,100 @@ const getShops = async (req, res) => {
 
 const getShopById = async (req, res) => {
   try {
-    const shop = await Shop.findById(
-      req.params.id
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid shop ID",
+      });
+    }
+
+    const shop = await Shop.findById(req.params.id);
+
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: "Shop not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      shop,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// const mongoose = require("mongoose");
+
+
+const updateShop = async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid shop ID",
+      });
+    }
+
+    // Fields allowed to be updated
+    const allowedFields = [
+      "price",
+      "installmentPrice",
+      "title",
+      "description",
+      "images",
+      "videos",
+      "virtualTour",
+      "locationMap",
+      "features",
+      "featured",
+      "length",
+      "width",
+    ];
+
+    const updates = {};
+
+    allowedFields.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field];
+      }
+    });
+
+    // Recalculate area if dimensions change
+    if (
+      updates.length !== undefined ||
+      updates.width !== undefined
+    ) {
+      const currentShop = await Shop.findById(req.params.id);
+
+      if (!currentShop) {
+        return res.status(404).json({
+          success: false,
+          message: "Shop not found",
+        });
+      }
+
+      const length =
+        updates.length ?? currentShop.length;
+
+      const width =
+        updates.width ?? currentShop.width;
+
+      updates.area = length * width;
+    }
+
+    const shop = await Shop.findByIdAndUpdate(
+      req.params.id,
+      updates,
+      {
+        new: true,
+        runValidators: true,
+      }
     );
 
     if (!shop) {
@@ -61,6 +159,7 @@ const getShopById = async (req, res) => {
 
     res.status(200).json({
       success: true,
+      message: "Shop updated successfully",
       shop,
     });
   } catch (error) {
@@ -70,38 +169,6 @@ const getShopById = async (req, res) => {
     });
   }
 };
-
-const updateShop = async (req, res) => {
-  try {
-    const shop =
-      await Shop.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        {
-          new: true,
-          runValidators: true,
-        }
-      );
-
-    if (!shop) {
-      return res.status(404).json({
-        success: false,
-        message: "Shop not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      shop,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
 const deleteShop = async (req, res) => {
   try {
     const shop = await Shop.findById(
@@ -183,6 +250,61 @@ const getShopsByCategory = async (req, res) => {
     });
   }
 };
+
+const getShopByCode = async (req, res) => {
+  try {
+    const shop = await Shop.findOne({
+      shopCode: req.params.shopCode.toUpperCase(),
+    });
+
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: "Shop not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      shop,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const bulkUpdatePrices = async (req, res) => {
+  try {
+    const { shopType, price, installmentPrice } = req.body;
+
+    const result = await Shop.updateMany(
+      {
+        shopType,
+        status: { $ne: "Sold" }
+      },
+      {
+        price,
+        installmentPrice
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      modified: result.modifiedCount,
+      message: `${result.modifiedCount} ${shopType} shops updated successfully`
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 const searchShops = async (
   req,
   res
@@ -231,6 +353,7 @@ module.exports = {
   createShop,
   getShops,
   getShopById,
+  getShopByCode,
   updateShop,
   deleteShop,
   getAvailableShops,

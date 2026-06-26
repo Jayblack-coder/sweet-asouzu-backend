@@ -2,22 +2,48 @@ const mongoose = require("mongoose");
 
 const shopSchema = new mongoose.Schema(
   {
-    shopNumber: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-
-    section: {
+    // Unique shop identifier
+    shopCode: {
   type: String,
-  required: true
+  required: true,
+  unique: true,
 },
-    category: {
+
+location: {
+  wing: {
+    type: String,
+    enum: ["A", "B", "C", "D", "E", "F", "G", "H"],
+    required: true,
+  },
+
+  block: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 6,
+  },
+
+  row: {
+    type: String,
+    enum: ["Front", "Back"],
+    required: true,
+  },
+
+  shopNumber: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 10,
+  },
+},
+    shopType: {
       type: String,
       enum: ["Standard", "Premium", "Executive"],
       required: true,
+      index: true,
     },
 
+    // Measurements
     length: {
       type: Number,
       required: true,
@@ -28,10 +54,9 @@ const shopSchema = new mongoose.Schema(
       required: true,
     },
 
-    area: {
-      type: Number,
-    },
+    area: Number,
 
+    // Pricing
     price: {
       type: Number,
       required: true,
@@ -42,24 +67,45 @@ const shopSchema = new mongoose.Schema(
       default: 0,
     },
 
+    // Availability
     status: {
       type: String,
       enum: [
-        "available",
-        "reserved",
-        "pending_payment",
-        "sold",
+        "Available",
+        "Reserved",
+        "Pending Payment",
+        "Sold",
       ],
-      default: "available",
+      default: "Available",
+      index: true,
     },
 
-    description: {
-      type: String,
+    featured: {
+      type: Boolean,
+      default: false,
     },
 
-    images: [String],
+    // Description
+    title: String,
 
-    videos: [String],
+    description: String,
+
+    // Media
+    images: [
+      {
+        url: String,
+        public_id: String,
+      },
+    ],
+
+    videos: [
+      {
+        url: String,
+        public_id: String,
+      },
+    ],
+
+    virtualTour: String,
 
     locationMap: String,
 
@@ -70,32 +116,29 @@ const shopSchema = new mongoose.Schema(
       ref: "Buyer",
       default: null,
     },
-    featured: {
-  type: Boolean,
-  default: false
-},
-shopCode: {
-  type: String,
-  unique: true
-}
   },
   {
     timestamps: true,
   }
 );
 
-shopSchema.pre("save", function (next) {
+shopSchema.pre("save", function () {
   this.area = this.length * this.width;
+});
+// shopSchema.index({ shopCode: 1 });
 
-  if (this.area <= 100) {
-    this.category = "Standard";
-  } else if (this.area <= 150) {
-    this.category = "Premium";
-  } else {
-    this.category = "Executive";
-  }
+shopSchema.index({
+    wing: 1,
+    block: 1,
+});
 
-  next();
+shopSchema.index({
+    shopType: 1,
+    status: 1,
+});
+
+shopSchema.index({
+    featured: 1,
 });
 
 module.exports = mongoose.model("Shop", shopSchema);
