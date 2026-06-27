@@ -251,6 +251,201 @@ const getShopsByCategory = async (req, res) => {
   }
 };
 
+const getShopStatistics = async (req, res) => {
+  try {
+    const totalShops = await Shop.countDocuments();
+
+    const available = await Shop.countDocuments({
+      status: "Available",
+    });
+
+    const reserved = await Shop.countDocuments({
+      status: "Reserved",
+    });
+
+    const sold = await Shop.countDocuments({
+      status: "Sold",
+    });
+
+    const standard = await Shop.countDocuments({
+      shopType: "Standard",
+    });
+
+    const premium = await Shop.countDocuments({
+      shopType: "Premium",
+    });
+
+    const executive = await Shop.countDocuments({
+      shopType: "Executive",
+    });
+
+    res.status(200).json({
+      success: true,
+      statistics: {
+        totalShops,
+        available,
+        reserved,
+        sold,
+        standard,
+        premium,
+        executive,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const getShopCategories = async (req, res) => {
+  res.status(200).json({
+    success: true,
+    categories: [
+      "Standard",
+      "Premium",
+      "Executive",
+    ],
+  });
+};
+
+const getFeaturedShops = async (req, res) => {
+  try {
+    const shops = await Shop.find({
+      featured: true,
+    }).sort({
+      createdAt: -1,
+    });
+
+    res.status(200).json({
+      success: true,
+      count: shops.length,
+      shops,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const getShopsByLayout = async (req, res) => {
+  try {
+    const { shopType, wing, block } = req.params;
+
+    const shops = await Shop.find({
+      shopType,
+      "location.wing": wing,
+      "location.block": Number(block),
+    }).sort({
+      "location.row": 1,
+      "location.shopNumber": 1,
+    });
+
+    res.status(200).json({
+      success: true,
+      shopType,
+      wing,
+      block: Number(block),
+      count: shops.length,
+      shops,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+const getNavigation = async (req, res) => {
+  try {
+    const { shopType, wing, block } = req.params;
+
+    const wings = [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+    ];
+
+    let currentWingIndex = wings.indexOf(wing);
+
+    let currentBlock = Number(block);
+
+    let previous = null;
+    let next = null;
+
+    let minBlock;
+    let maxBlock;
+
+    if (shopType === "Standard") {
+      minBlock = 1;
+      maxBlock = 2;
+    } else if (shopType === "Premium") {
+      minBlock = 3;
+      maxBlock = 4;
+    } else {
+      minBlock = 5;
+      maxBlock = 6;
+    }
+
+    // Previous
+    if (currentBlock > minBlock) {
+      previous = {
+        shopType,
+        wing,
+        block: currentBlock - 1,
+      };
+    } else if (currentWingIndex > 0) {
+      previous = {
+        shopType,
+        wing: wings[currentWingIndex - 1],
+        block: maxBlock,
+      };
+    }
+
+    // Next
+    if (currentBlock < maxBlock) {
+      next = {
+        shopType,
+        wing,
+        block: currentBlock + 1,
+      };
+    } else if (currentWingIndex < wings.length - 1) {
+      next = {
+        shopType,
+        wing: wings[currentWingIndex + 1],
+        block: minBlock,
+      };
+    }
+
+    res.status(200).json({
+      success: true,
+      current: {
+        shopType,
+        wing,
+        block: currentBlock,
+      },
+      previous,
+      next,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 const getShopByCode = async (req, res) => {
   try {
     const shop = await Shop.findOne({
@@ -275,6 +470,32 @@ const getShopByCode = async (req, res) => {
     });
   }
 };
+
+// const getShopsByLayout = async (req, res) => {
+//   try {
+//     const { shopType, wing, block } = req.params;
+
+//     const shops = await Shop.find({
+//       shopType,
+//       wing,
+//       block: Number(block),
+//     }).sort({ row: 1, shopNumber: 1 });
+
+//     res.status(200).json({
+//       success: true,
+//       shopType,
+//       wing,
+//       block: Number(block),
+//       count: shops.length,
+//       shops,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
 
 const bulkUpdatePrices = async (req, res) => {
   try {
@@ -316,10 +537,10 @@ const searchShops = async (
     const shops = await Shop.find({
       $or: [
         {
-          shopNumber: {
-            $regex: keyword,
-            $options: "i",
-          },
+         shopCode: {
+    $regex: keyword,
+    $options: "i",
+  },
         },
         {
           shopType: {
@@ -359,4 +580,10 @@ module.exports = {
   getAvailableShops,
   getShopsByCategory,
   searchShops,
+
+  getShopStatistics,
+  getShopCategories,
+  getFeaturedShops,
+  getShopsByLayout,
+  getNavigation,
 };
