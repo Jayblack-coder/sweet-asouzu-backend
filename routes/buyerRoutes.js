@@ -1,23 +1,48 @@
 const express = require("express");
 
 const router = express.Router();
-
+ router.delete("/test", (req, res) => {
+  res.json({
+    success: true,
+    message: "Delete works",
+  });
+});
 const {
-  createBuyer,
-  getBuyers,
-  getBuyerById,
-  updateBuyer,
-  deleteBuyer,
+  registerBuyer,
+  loginBuyer,
+  getBuyerProfile,
+  updateBuyerProfile,
+  deleteBuyerProfile
 } = require("../controllers/buyerController");
 
-router.post("/", createBuyer);
+const protectBuyer = require("../middleware/protectBuyer");
 
-router.get("/", getBuyers);
+router.post(
+  "/register",
+  registerBuyer
+);
 
-router.get("/:id", getBuyerById);
+router.post(
+  "/login",
+  loginBuyer
+);
 
-router.put("/:id", updateBuyer);
+router.get(
+  "/profile",
+  protectBuyer,
+  getBuyerProfile
+);
 
-router.delete("/:id", deleteBuyer);
+router.put(
+  "/profile",
+  protectBuyer,
+  updateBuyerProfile
+);
+
+router.delete(
+  "/profile",
+  protectBuyer,
+  deleteBuyerProfile
+);
 
 module.exports = router;

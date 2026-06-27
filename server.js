@@ -4,13 +4,12 @@ const express = require("express");
 const cors = require("cors");
 
 const connectDB = require("./config/db");
-// const reservationRoutes = require("./routes/reservationRoutes");
+const reservationRoutes = require("./routes/reservationRoutes");
 const app = express();
 // const adminRoutes =
 //   require("./routes/adminRoutes");
  connectDB();
-// const buyerRoutes =
-// require("./routes/buyerRoutes");
+const buyerRoutes = require("./routes/buyerRoutes");
 const shopRoutes =
 require("./routes/shopRoutes");
 
@@ -18,11 +17,8 @@ app.use(cors());
 
 app.use(express.json());
 // app.use("/api/admin", adminRoutes);
-// app.use("/api/reservations", reservationRoutes);
-// app.use(
-//   "/api/buyers",
-//   buyerRoutes
-// );
+app.use("/api/reservations", reservationRoutes);
+app.use("/api/buyers", buyerRoutes);
 app.use(
   "/api/shops",
   shopRoutes

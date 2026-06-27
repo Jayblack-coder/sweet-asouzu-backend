@@ -1,78 +1,62 @@
 const mongoose = require("mongoose");
 
 const reservationSchema = new mongoose.Schema(
-  {
-    buyer: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Buyer",
-      required: true,
+{
+    buyer:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref:"Buyer",
+        required:true,
     },
 
-    shop: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Shop",
-      required: true,
+    shop:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref:"Shop",
+        required:true,
     },
 
-    reservationCode: {
-      type: String,
-      unique: true,
-      required: true,
+    reservationNumber:{
+        type:String,
+        unique:true,
+        required:true,
     },
 
-    reservationDate: {
-      type: Date,
-      default: Date.now,
+    status:{
+        type:String,
+        enum:[
+            "Pending",
+            "Approved",
+            "Rejected",
+            "Cancelled",
+            "Expired"
+        ],
+        default:"Pending",
     },
 
-    expiryDate: {
-      type: Date,
-      required: true,
+    paymentOption:{
+        type:String,
+        enum:[
+            "Full",
+            "Installment"
+        ],
+        default:"Full",
     },
 
-    reservationStatus: {
-      type: String,
-      enum: [
-        "Pending",
-        "Reserved",
-        "Expired",
-        "Cancelled",
-        "Completed"
-      ],
-      default: "Pending",
+    reservedAt:{
+        type:Date,
+        default:Date.now,
     },
 
-    amountExpected: {
-      type: Number,
-      required: true,
+    expiresAt:{
+        type:Date,
     },
 
-    amountPaid: {
-      type: Number,
-      default: 0,
-    },
-
-    paymentStatus: {
-      type: String,
-      enum: [
-        "Unpaid",
-        "Partially Paid",
-        "Paid"
-      ],
-      default: "Unpaid",
-    },
-
-    adminNotes: {
-      type: String,
-      default: "",
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
+    notes:String,
+},
+{
+    timestamps:true,
+});
 
 module.exports = mongoose.model(
-  "Reservation",
-  reservationSchema
+    "Reservation",
+    reservationSchema
 );
