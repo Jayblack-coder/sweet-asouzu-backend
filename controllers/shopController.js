@@ -598,4 +598,5 @@ module.exports = {
   getFeaturedShops,
   getShopsByLayout,
   getNavigation,
+  bulkUpdatePrices, 
 };

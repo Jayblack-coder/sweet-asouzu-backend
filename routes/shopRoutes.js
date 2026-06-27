@@ -17,13 +17,14 @@ const {
   getFeaturedShops,
   getShopsByLayout,
   getNavigation,
+  bulkUpdatePrices, 
 } = require("../controllers/shopController");
 
 // console.log({
 //   getShopsByLayout,
 //   getNavigation,
 // });
-
+console.log(typeof bulkUpdatePrices);
 router.get("/test", (req, res) => {
   res.json({ message: "Shop routes are working" });
 });
@@ -66,6 +67,7 @@ router.get(
 router.get("/code/:shopCode", getShopByCode);
 
 router.get("/category/:type", getShopsByCategory);
+router.put("/bulk-update-prices", bulkUpdatePrices);
 
 router.get("/:id", getShopById);
 
