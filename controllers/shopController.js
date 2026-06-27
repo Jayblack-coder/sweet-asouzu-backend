@@ -534,28 +534,40 @@ const searchShops = async (
     const keyword =
       req.query.keyword || "";
 
-    const shops = await Shop.find({
-      $or: [
-        {
-         shopCode: {
-    $regex: keyword,
-    $options: "i",
-  },
-        },
-        {
-          shopType: {
-            $regex: keyword,
-            $options: "i",
-          },
-        },
-        {
-          status: {
-            $regex: keyword,
-            $options: "i",
-          },
-        },
-      ],
-    });
+  //   const shops = await Shop.find({
+  //     $or: [
+  //       {
+  //        shopCode: {
+  //   $regex: keyword,
+  //   $options: "i",
+  // },
+  //       },
+  //       {
+  //         shopType: {
+  //           $regex: keyword,
+  //           $options: "i",
+  //         },
+  //       },
+  //       {
+  //         status: {
+  //           $regex: keyword,
+  //           $options: "i",
+  //         },
+  //       },
+  //     ],
+  //   });
+
+  const shops = await Shop.find({
+  $or: [
+    { shopCode: { $regex: keyword, $options: "i" } },
+    { shopType: { $regex: keyword, $options: "i" } },
+    { status: { $regex: keyword, $options: "i" } },
+    { "location.wing": { $regex: keyword, $options: "i" } },
+    { "location.row": { $regex: keyword, $options: "i" } },
+    { "location.block": Number(keyword) || -1 },
+    { "location.shopNumber": Number(keyword) || -1 },
+  ],
+});
 
     res.status(200).json({
       success: true,
