@@ -12,6 +12,7 @@ const app = express();
 const buyerRoutes = require("./routes/buyerRoutes");
 const shopRoutes =
 require("./routes/shopRoutes");
+// const paymentRoutes = require("./routes/paymentRoutes");
 
 // app.use(cors());
 app.use(
@@ -32,6 +33,8 @@ app.use(
   "/api/shops",
   shopRoutes
 );
+// app.use("/api/payments", paymentRoutes);
+
 app.get("/", (req, res) => {
   res.send("Sweet Asouzu Plaza API Running");
 });
