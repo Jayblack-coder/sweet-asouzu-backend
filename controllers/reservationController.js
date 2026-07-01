@@ -1,9 +1,16 @@
+const generateReservationNumber = require("../utils/generateReservationNumber");
 const Reservation = require("../models/Reservation");
 const Shop = require("../models/Shop");
 
+
+
+    
 const createReservation = async (req, res) => {
+  
   try {
     const buyerId = req.buyer._id;
+const reservationNumber =
+  await generateReservationNumber();
 
     const {
       shopId,
@@ -52,9 +59,9 @@ const createReservation = async (req, res) => {
     expiresAt.setHours(expiresAt.getHours() + 72);
 
     // Generate reservation number
-   const reservationNumber = `SAP-${new Date().getFullYear()}-${Math.floor(
-  100000 + Math.random() * 900000
-)}`;
+//    const reservationNumber = `SAP-${new Date().getFullYear()}-${Math.floor(
+//   100000 + Math.random() * 900000
+// )}`;
     // Create reservation
     const reservation =
       await Reservation.create({
@@ -67,9 +74,14 @@ const createReservation = async (req, res) => {
       });
 
     // Reserve shop
-    shop.status = "Reserved";
-    await shop.save();
-
+   await Shop.updateOne(
+  { _id: shop._id },
+  {
+    $set: {
+      status: "Reserved",
+    },
+  }
+);
     res.status(201).json({
       success: true,
       message: "Shop reserved successfully",

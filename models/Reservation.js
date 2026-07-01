@@ -14,23 +14,36 @@ const reservationSchema = new mongoose.Schema(
         required:true,
     },
 
-    reservationNumber:{
-        type:String,
-        unique:true,
-        required:true,
-    },
+   reservationNumber: {
+  type: String,
+  required: true,
+  unique: true,
+},
 
-    status:{
-        type:String,
-        enum:[
-            "Pending",
-            "Approved",
-            "Rejected",
-            "Cancelled",
-            "Expired"
-        ],
-        default:"Pending",
-    },
+    // status:{
+    //     type:String,
+    //     enum:[
+    //         "Pending",
+    //         "Approved",
+    //         "Rejected",
+    //         "Cancelled",
+    //         "Expired"
+    //     ],
+    //     default:"Pending",
+    // },
+    
+    status: {
+  type: String,
+  enum: [
+    "Pending",
+    "Approved",
+    "Payment Pending",
+    "Completed",
+    "Cancelled",
+    "Expired",
+  ],
+  default: "Pending",
+},
 
     paymentOption:{
         type:String,

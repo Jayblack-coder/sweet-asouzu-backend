@@ -57,10 +57,10 @@ location: {
     area: Number,
 
     // Pricing
-    price: {
-      type: Number,
-      required: true,
-    },
+   price: {
+  type: Number,
+  default: null,
+},
 
     installmentPrice: {
       type: Number,

@@ -2,6 +2,18 @@ const mongoose = require("mongoose");
 
 const paymentSchema = new mongoose.Schema(
   {
+    paymentReference: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+
+    reservation: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Reservation",
+      required: true,
+    },
+
     buyer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Buyer",
@@ -14,75 +26,71 @@ const paymentSchema = new mongoose.Schema(
       required: true,
     },
 
-    reservation: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Reservation",
-    },
-
-    paymentCode: {
+    paymentType: {
       type: String,
-      unique: true,
-      required: true,
-    },
-
-    amount: {
-      type: Number,
+      enum: ["Full", "Installment"],
       required: true,
     },
 
     paymentMethod: {
       type: String,
       enum: [
-        "Bank Transfer",
         "Paystack",
         "Flutterwave",
+        "Bank Transfer",
         "Cash",
       ],
+      default: "Paystack",
+    },
+
+    amountPaid: {
+      type: Number,
       required: true,
+    },
+
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+
+    balance: {
+      type: Number,
+      default: 0,
+    },
+
+    installmentNumber: {
+      type: Number,
+      default: 1,
     },
 
     transactionReference: {
       type: String,
+      default: "",
     },
 
-    proofOfPayment: {
-      type: String,
+    gatewayResponse: {
+      type: Object,
+      default: {},
     },
 
-    paymentStatus: {
+    status: {
       type: String,
       enum: [
         "Pending",
-        "Verified",
-        "Rejected",
+        "Successful",
+        "Failed",
+        "Refunded",
       ],
       default: "Pending",
     },
 
-    paymentDate: {
-      type: Date,
-      default: Date.now,
-    },
+    paidAt: Date,
 
-    verifiedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Admin",
-    },
-
-    verificationDate: {
-      type: Date,
-    },
-
-    adminComment: {
-      type: String,
-    },
+    remarks: String,
   },
   {
     timestamps: true,
   }
 );
 
-module.exports = mongoose.model(
-  "Payment",
-  paymentSchema
-);
+module.exports = mongoose.model("Payment", paymentSchema);

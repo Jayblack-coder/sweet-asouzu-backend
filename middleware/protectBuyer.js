@@ -32,12 +32,12 @@ const protectBuyer = async (
       token,
       process.env.JWT_SECRET
     );
-console.log("Decoded JWT:", decoded);
+// console.log("Decoded JWT:", decoded);
     req.buyer =
       await Buyer.findById(
         decoded.id
       ).select("-password");
-console.log("Buyer from DB:", req.buyer);
+// console.log("Buyer from DB:", req.buyer);
     next();
   } catch (error) {
     res.status(401).json({
