@@ -96,6 +96,68 @@ const reservationNumber =
   }
 };
 
+const getReservationById = async (req, res) => {
+  try {
+    const reservation = await Reservation.findById(
+      req.params.reservationId
+    )
+      .populate("shop")
+      .populate("buyer", "firstName lastName email phone");
+
+    if (!reservation) {
+      return res.status(404).json({
+        success: false,
+        message: "Reservation not found",
+      });
+    }
+
+    // Ensure the logged-in buyer owns this reservation
+    if (
+      reservation.buyer._id.toString() !==
+      req.buyer._id.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    res.json({
+      success: true,
+      reservation,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const getMyReservations = async (req, res) => {
+  try {
+    const reservations = await Reservation.find({
+      buyer: req.buyer._id,
+    })
+      .populate("shop")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: reservations.length,
+      reservations,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   createReservation,
+  getReservationById,
+  getMyReservations,
 };

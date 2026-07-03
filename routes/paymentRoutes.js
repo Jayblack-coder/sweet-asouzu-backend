@@ -6,8 +6,8 @@ const protectBuyer = require("../middleware/protectBuyer");
 const {
   initializePayment,
   verifyPayment,
-  getBuyerPayments,
-  webhook,
+  // getBuyerPayments,
+  // webhook,
 } = require("../controllers/paymentController");
 
 // Buyer initializes payment
@@ -25,17 +25,17 @@ router.get(
 );
 
 // Buyer payment history
-router.get(
-  "/my-payments",
-  protectBuyer,
-  getBuyerPayments
-);
+// router.get(
+//   "/my-payments",
+//   protectBuyer,
+//   getBuyerPayments
+// );
 
 // Paystack webhook
-router.post(
-  "/webhook",
-  express.raw({ type: "application/json" }),
-  webhook
-);
+// router.post(
+//   "/webhook",
+//   express.raw({ type: "application/json" }),
+//   webhook
+// );
 
 module.exports = router;

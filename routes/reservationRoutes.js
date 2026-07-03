@@ -4,6 +4,8 @@ const router = express.Router();
 
 const {
   createReservation,
+  getReservationById,
+  getMyReservations
 } = require("../controllers/reservationController");
 
 const protectBuyer = require("../middleware/protectBuyer");
@@ -14,10 +16,23 @@ router.get("/", (req, res) => {
   });
 });
 
+router.get(
+  "/my-reservations",
+  protectBuyer,
+  getMyReservations
+);
+
+router.get(
+  "/:reservationId",
+  protectBuyer,
+  getReservationById
+);
+
 router.post(
   "/",
   protectBuyer,
   createReservation
 );
+
 
 module.exports = router;
