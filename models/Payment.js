@@ -73,6 +73,7 @@ const paymentSchema = new mongoose.Schema(
       default: {},
     },
 
+    
     status: {
       type: String,
       enum: [

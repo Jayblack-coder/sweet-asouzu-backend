@@ -98,18 +98,29 @@ const reservationNumber =
 
 const getReservationById = async (req, res) => {
   try {
-    const reservation = await Reservation.findById(
-      req.params.reservationId
-    )
-      .populate("shop")
-      .populate("buyer", "firstName lastName email phone");
+    // const reservation = await Reservation.findById(
+    //   req.params.reservationId
+    // )
+    //   .populate("shop")
+    //   .populate("buyer", "firstName lastName email phone");
 
-    if (!reservation) {
-      return res.status(404).json({
-        success: false,
-        message: "Reservation not found",
-      });
-    }
+    // if (!reservation) {
+    //   return res.status(404).json({
+    //     success: false,
+    //     message: "Reservation not found",
+    //   });
+    // }
+
+    const reservation = await Reservation.findById(req.params.reservationId)
+  .populate("shop")
+  .populate("buyer");
+
+if (!reservation) {
+  return res.status(404).json({
+    success: false,
+    message: "Reservation not found",
+  });
+}
 
     // Ensure the logged-in buyer owns this reservation
     if (

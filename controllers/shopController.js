@@ -1,5 +1,10 @@
 const Shop = require("../models/Shop");
 const mongoose = require("mongoose");
+
+const {
+  formatShopForBuyer,
+} = require("../utils/shopFormatter");
+
 const createShop = async (req, res) => {
   try {
     // const shop = await Shop.create(req.body);
@@ -36,14 +41,15 @@ const getShops = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    res.status(200).json({
-      success: true,
-      currentPage: page,
-      totalPages: Math.ceil(totalShops / limit),
-      totalShops,
-      count: shops.length,
-      shops,
-    });
+   res.status(200).json({
+  success: true,
+  currentPage: page,
+  totalPages: Math.ceil(totalShops / limit),
+  totalShops,
+  count: shops.length,
+  shops: shops.map(formatShopForBuyer),
+});
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -72,7 +78,7 @@ const getShopById = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      shop,
+     shop: formatShopForBuyer(shop),
     });
   } catch (error) {
     res.status(500).json({
@@ -208,7 +214,7 @@ const getAvailableShops = async (
     res.status(200).json({
       success: true,
       count: shops.length,
-      shops,
+      shops: shops.map(formatShopForBuyer),
     });
   } catch (error) {
     res.status(500).json({
@@ -241,7 +247,7 @@ const getShopsByCategory = async (req, res) => {
       currentPage: page,
       totalPages: Math.ceil(totalShops / limit),
       totalShops,
-      shops,
+      shops: shops.map(formatShopForBuyer),
     });
   } catch (error) {
     res.status(500).json({
@@ -321,7 +327,7 @@ const getFeaturedShops = async (req, res) => {
     res.status(200).json({
       success: true,
       count: shops.length,
-      shops,
+      shops: shops.map(formatShopForBuyer),
     });
   } catch (error) {
     res.status(500).json({
@@ -350,7 +356,7 @@ const getShopsByLayout = async (req, res) => {
       wing,
       block: Number(block),
       count: shops.length,
-      shops,
+      shops: shops.map(formatShopForBuyer),
     });
 
   } catch (error) {
@@ -461,7 +467,7 @@ const getShopByCode = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      shop,
+      shop: formatShopForBuyer(shop),
     });
   } catch (error) {
     res.status(500).json({
@@ -572,7 +578,7 @@ const searchShops = async (
     res.status(200).json({
       success: true,
       count: shops.length,
-      shops,
+      shops: shops.map(formatShopForBuyer),
     });
   } catch (error) {
     res.status(500).json({
