@@ -96,6 +96,58 @@ const reservationNumber =
   }
 };
 
+
+
+const getAllReservations = async (req, res) => {
+  try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+
+    // Filter by reservation status
+    if (req.query.status) {
+      filter.status = req.query.status;
+    }
+
+    // Filter by payment option
+    if (req.query.paymentOption) {
+      filter.paymentOption = req.query.paymentOption;
+    }
+
+    const totalReservations = await Reservation.countDocuments(filter);
+
+    const reservations = await Reservation.find(filter)
+      .populate(
+        "buyer",
+        "firstName lastName email phone"
+      )
+      .populate(
+        "shop",
+        "shopCode shopType location price installmentPrice status"
+      )
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json({
+      success: true,
+      currentPage: page,
+      totalPages: Math.ceil(totalReservations / limit),
+      totalReservations,
+      count: reservations.length,
+      reservations,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 const getReservationById = async (req, res) => {
   try {
     // const reservation = await Reservation.findById(
@@ -146,6 +198,11 @@ if (!reservation) {
   }
 };
 
+
+    
+// 
+
+
 const getMyReservations = async (req, res) => {
   try {
     const reservations = await Reservation.find({
@@ -167,8 +224,166 @@ const getMyReservations = async (req, res) => {
   }
 };
 
+const approveReservation = async (req, res) => {
+  try {
+    const reservation = await Reservation.findById(req.params.id);
+
+    if (!reservation) {
+      return res.status(404).json({
+        success: false,
+        message: "Reservation not found",
+      });
+    }
+
+    // Prevent approving a cancelled reservation
+    if (reservation.status === "Cancelled") {
+  return res.status(400).json({
+    success: false,
+    message: "Cancelled reservations cannot be approved.",
+  });
+}
+
+if (reservation.status === "Approved") {
+  return res.status(400).json({
+    success: false,
+    message: "Reservation has already been approved.",
+  });
+}
+    reservation.status = "Approved";
+
+  //  reservation.status = "Approved";
+
+await reservation.save();
+
+// Mark the shop as sold
+await Shop.findByIdAndUpdate(
+  reservation.shop,
+  {
+    status: "Sold",
+    buyer: reservation.buyer,
+  }
+);
+
+// Reject all other pending reservations for this shop
+await Reservation.updateMany(
+  {
+    shop: reservation.shop,
+    _id: { $ne: reservation._id },
+    status: "Pending",
+  },
+  {
+    $set: {
+      status: "Rejected",
+    },
+  }
+);
+
+res.status(200).json({
+  success: true,
+  message: "Reservation approved successfully.",
+  reservation,
+});
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const cancelReservation = async (req, res) => {
+  try {
+    const reservation = await Reservation.findById(req.params.id);
+
+    if (!reservation) {
+      return res.status(404).json({
+        success: false,
+        message: "Reservation not found",
+      });
+    }
+
+    // Prevent cancelling an already cancelled reservation
+    if (reservation.status === "Cancelled") {
+      return res.status(400).json({
+        success: false,
+        message: "Reservation has already been cancelled.",
+      });
+    }
+
+    // Don't allow cancelling an already approved reservation
+    if (reservation.status === "Approved") {
+      return res.status(400).json({
+        success: false,
+        message: "Approved reservations cannot be cancelled.",
+      });
+    }
+
+    reservation.status = "Cancelled";
+
+    await reservation.save();
+
+    await Shop.findByIdAndUpdate(reservation.shop, {
+      status: "Available",
+      buyer: null,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Reservation cancelled successfully.",
+      reservation,
+    });
+
+  } catch (error) {
+    console.error("Cancel Reservation Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to cancel reservation.",
+      error: error.message,
+    });
+  }
+};
+
+const getReservationDetailsAdmin = async (req, res) => {
+  try {
+    const reservation = await Reservation.findById(req.params.id)
+      .populate(
+        "buyer",
+        "firstName lastName email phone"
+      )
+      .populate("shop");
+
+    if (!reservation) {
+      return res.status(404).json({
+        success: false,
+        message: "Reservation not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      reservation,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   createReservation,
   getReservationById,
   getMyReservations,
+  getAllReservations,
+  approveReservation,
+  cancelReservation,
+  getReservationDetailsAdmin,
 };

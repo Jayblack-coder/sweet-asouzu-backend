@@ -28,7 +28,11 @@ const adminSchema = new mongoose.Schema(
       ],
       default: "Support Staff",
     },
-
+permissions: [
+    {
+        type: String
+    }
+],
     isActive: {
       type: Boolean,
       default: true,

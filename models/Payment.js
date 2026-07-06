@@ -73,6 +73,10 @@ const paymentSchema = new mongoose.Schema(
       default: {},
     },
 
+    adminNote: {
+  type: String,
+  default: "",
+},
     
     status: {
       type: String,
