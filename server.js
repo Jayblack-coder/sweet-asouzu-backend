@@ -14,6 +14,7 @@ const shopRoutes =
 require("./routes/shopRoutes");
 // const paymentRoutes = require("./routes/paymentRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 // app.use(cors());
 app.use(
@@ -36,6 +37,7 @@ app.use(
 );
 // app.use("/api/payments", paymentRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/admins", adminRoutes);
 app.get("/", (req, res) => {
   res.send("Sweet Asouzu Plaza API Running");
 });

@@ -5,6 +5,14 @@ const {
   getDashboard,
 } = require("../controllers/dashboardController");
 
-router.get("/overview", getDashboard);
+const {
+  protectAdmin,
+} = require("../middleware/adminAuth");
+
+router.get(
+  "/overview",
+  protectAdmin,
+  getDashboard
+);
 
 module.exports = router;

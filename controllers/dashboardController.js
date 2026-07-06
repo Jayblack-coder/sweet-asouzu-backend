@@ -8,7 +8,6 @@ const getDashboard = async (req, res) => {
     // =========================
     // SHOP STATISTICS
     // =========================
-
     const totalShops = await Shop.countDocuments();
 
     const availableShops = await Shop.countDocuments({
@@ -26,13 +25,11 @@ const getDashboard = async (req, res) => {
     // =========================
     // BUYERS
     // =========================
-
     const totalBuyers = await Buyer.countDocuments();
 
     // =========================
     // RESERVATIONS
     // =========================
-
     const totalReservations =
       await Reservation.countDocuments();
 
@@ -54,18 +51,15 @@ const getDashboard = async (req, res) => {
     // =========================
     // PAYMENT SUMMARY
     // =========================
-
     const payments = await Payment.find({
       status: "Successful",
     });
 
     let amountReceived = 0;
-
     let outstandingBalance = 0;
 
     payments.forEach((payment) => {
       amountReceived += payment.amountPaid || 0;
-
       outstandingBalance += payment.balance || 0;
     });
 
@@ -75,10 +69,12 @@ const getDashboard = async (req, res) => {
     // =========================
     // RECENT RESERVATIONS
     // =========================
-
     const recentReservations =
       await Reservation.find()
-        .populate("buyer", "firstName lastName")
+        .populate(
+          "buyer",
+          "firstName lastName"
+        )
         .populate("shop", "shopCode")
         .sort({ createdAt: -1 })
         .limit(10);
@@ -86,10 +82,12 @@ const getDashboard = async (req, res) => {
     // =========================
     // RECENT PAYMENTS
     // =========================
-
     const recentPayments =
       await Payment.find()
-        .populate("buyer", "firstName lastName")
+        .populate(
+          "buyer",
+          "firstName lastName"
+        )
         .populate("shop", "shopCode")
         .sort({ createdAt: -1 })
         .limit(10);
@@ -101,37 +99,26 @@ const getDashboard = async (req, res) => {
     res.status(200).json({
       success: true,
 
-      overview: {
-        shops: {
-          total: totalShops,
-          available: availableShops,
-          reserved: reservedShops,
-          sold: soldShops,
-        },
+      totalShops,
+      availableShops,
+      reservedShops,
+      soldShops,
 
-        buyers: totalBuyers,
+      totalBuyers,
 
-        reservations: totalReservations,
+      totalReservations,
+      pendingReservations,
+      awaitingPayments,
+      completedSales,
 
-        pendingReservations,
-
-        awaitingPayments,
-
-        completedSales,
-      },
-
-      finance: {
-        totalSales,
-
-        amountReceived,
-
-        outstandingBalance,
-      },
+      totalSales,
+      amountReceived,
+      outstandingBalance,
 
       recentReservations,
-
       recentPayments,
     });
+
   } catch (error) {
     console.error(error);
 

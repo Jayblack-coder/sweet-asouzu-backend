@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs");
 const generateToken = require(
   "../utils/generateToken"
 );
+// const jwt = require("jsonwebtoken");
+
 const registerAdmin = async (req, res) => {
   try {
     const {
@@ -69,22 +71,7 @@ const loginAdmin = async (req, res) => {
       });
     }
 
-    const token = jwt.sign(
-    {
-        id: admin._id,
-        role: admin.role
-    },
-    process.env.JWT_SECRET,
-    {
-        expiresIn: "7d"
-    }
-);
 
-res.json({
-    success: true,
-    token,
-    admin,
-});
     admin.lastLogin = new Date();
 
     await admin.save();
