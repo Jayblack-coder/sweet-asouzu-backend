@@ -1,7 +1,7 @@
 const generateReservationNumber = require("../utils/generateReservationNumber");
 const Reservation = require("../models/Reservation");
 const Shop = require("../models/Shop");
-
+const Buyer = require("../models/Buyer");
 
 
     
@@ -58,11 +58,7 @@ const reservationNumber =
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 72);
 
-    // Generate reservation number
-//    const reservationNumber = `SAP-${new Date().getFullYear()}-${Math.floor(
-//   100000 + Math.random() * 900000
-// )}`;
-    // Create reservation
+   
     const reservation =
       await Reservation.create({
         buyer: buyerId,
@@ -97,7 +93,6 @@ const reservationNumber =
 };
 
 
-
 const getAllReservations = async (req, res) => {
   try {
     const page = Number(req.query.page) || 1;
@@ -106,17 +101,74 @@ const getAllReservations = async (req, res) => {
 
     const filter = {};
 
-    // Filter by reservation status
     if (req.query.status) {
       filter.status = req.query.status;
     }
 
-    // Filter by payment option
     if (req.query.paymentOption) {
       filter.paymentOption = req.query.paymentOption;
     }
 
-    const totalReservations = await Reservation.countDocuments(filter);
+    // -------------------------
+    // SEARCH
+    // -------------------------
+    if (req.query.search) {
+      const keyword = req.query.search.trim();
+
+      // Search buyers
+      const buyers = await Buyer.find({
+        $or: [
+          {
+            firstName: {
+              $regex: keyword,
+              $options: "i",
+            },
+          },
+          {
+            lastName: {
+              $regex: keyword,
+              $options: "i",
+            },
+          },
+          {
+            phone: {
+              $regex: keyword,
+              $options: "i",
+            },
+          },
+        ],
+      }).select("_id");
+
+      // Search shops
+      const shops = await Shop.find({
+        shopCode: {
+          $regex: keyword,
+          $options: "i",
+        },
+      }).select("_id");
+
+      filter.$or = [
+        {
+          reservationNumber: {
+            $regex: keyword,
+            $options: "i",
+          },
+        },
+        {
+          buyer: {
+            $in: buyers.map((b) => b._id),
+          },
+        },
+        {
+          shop: {
+            $in: shops.map((s) => s._id),
+          },
+        },
+      ];
+    }
+
+    const totalReservations =
+      await Reservation.countDocuments(filter);
 
     const reservations = await Reservation.find(filter)
       .populate(
@@ -134,13 +186,16 @@ const getAllReservations = async (req, res) => {
     res.status(200).json({
       success: true,
       currentPage: page,
-      totalPages: Math.ceil(totalReservations / limit),
+      totalPages: Math.ceil(
+        totalReservations / limit
+      ),
       totalReservations,
       count: reservations.length,
       reservations,
     });
-
   } catch (error) {
+    console.error(error);
+
     res.status(500).json({
       success: false,
       message: error.message,
@@ -150,19 +205,7 @@ const getAllReservations = async (req, res) => {
 
 const getReservationById = async (req, res) => {
   try {
-    // const reservation = await Reservation.findById(
-    //   req.params.reservationId
-    // )
-    //   .populate("shop")
-    //   .populate("buyer", "firstName lastName email phone");
-
-    // if (!reservation) {
-    //   return res.status(404).json({
-    //     success: false,
-    //     message: "Reservation not found",
-    //   });
-    // }
-
+    
     const reservation = await Reservation.findById(req.params.reservationId)
   .populate("shop")
   .populate("buyer");
@@ -248,6 +291,13 @@ if (reservation.status === "Approved") {
     success: false,
     message: "Reservation has already been approved.",
   });
+}
+if (!reservation.paymentConfirmed) {
+    return res.status(400).json({
+        success: false,
+        message:
+            "Payment must be confirmed before approval.",
+    });
 }
     reservation.status = "Approved";
 
@@ -378,6 +428,50 @@ const getReservationDetailsAdmin = async (req, res) => {
   }
 };
 
+const updateReservationAdmin = async (req, res) => {
+    try {
+
+        const reservation =
+            await Reservation.findById(req.params.id);
+
+        if (!reservation) {
+            return res.status(404).json({
+                success: false,
+                message: "Reservation not found",
+            });
+        }
+
+        reservation.paymentConfirmed =
+            req.body.paymentConfirmed;
+
+        reservation.adminNotes =
+            req.body.adminNotes;
+
+        if (req.body.paymentConfirmed) {
+            reservation.paymentConfirmedAt =
+                new Date();
+
+            reservation.paymentConfirmedBy =
+                req.admin._id;
+        }
+
+        await reservation.save();
+
+        res.json({
+            success: true,
+            reservation,
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+
+    }
+};
+
 module.exports = {
   createReservation,
   getReservationById,
@@ -386,4 +480,5 @@ module.exports = {
   approveReservation,
   cancelReservation,
   getReservationDetailsAdmin,
+  updateReservationAdmin,
 };

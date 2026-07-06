@@ -10,6 +10,7 @@ const {
   approveReservation,
   cancelReservation,
   getReservationDetailsAdmin,
+  updateReservationAdmin,
 } = require("../controllers/reservationController");
 const { protectAdmin } = require("../middleware/adminAuth");
 const protectBuyer = require("../middleware/protectBuyer");
@@ -43,6 +44,12 @@ router.patch(
   "/:id/cancel",
   protectAdmin,
   cancelReservation
+);
+
+router.patch(
+    "/admin/:id",
+    protectAdmin,
+    updateReservationAdmin
 );
 
 router.get(

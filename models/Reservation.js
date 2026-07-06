@@ -54,6 +54,23 @@ const reservationSchema = new mongoose.Schema(
       default: "Full",
     },
 
+    paymentConfirmed: {
+    type: Boolean,
+    default: false,
+},
+
+paymentConfirmedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Admin",
+},
+
+paymentConfirmedAt: Date,
+
+adminNotes: {
+    type: String,
+    default: "",
+},
+
     reservedAt: {
       type: Date,
       default: Date.now,
