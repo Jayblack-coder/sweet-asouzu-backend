@@ -4,7 +4,18 @@ const mongoose = require("mongoose");
 
 const mediaSchema = new mongoose.Schema(
   {
-    title: String,
+    title: {
+      type: String,
+      trim: true,
+    },
+
+   key: {
+  type: String,
+  trim: true,
+  unique: true,
+  sparse: true,
+  default: "",
+},
 
     type: {
       type: String,
@@ -29,7 +40,10 @@ const mediaSchema = new mongoose.Schema(
       required: true,
     },
 
-    publicId: String,
+    publicId: {
+      type: String,
+      default: "",
+    },
 
     order: {
       type: Number,

@@ -75,4 +75,39 @@ router.get("/:category", async (req, res) => {
   res.json(media);
 });
 
+router.delete("/:id", async (req,res)=>{
+    try{
+
+        const media = await Media.findById(req.params.id);
+
+        if(!media){
+            return res.status(404).json({
+                message:"Media not found"
+            });
+        }
+
+        await cloudinary.uploader.destroy(
+            media.publicId,
+            {
+                resource_type:
+                    media.type==="video"
+                    ? "video"
+                    : "image"
+            }
+        );
+
+        await media.deleteOne();
+
+        res.json({
+            message:"Deleted successfully"
+        });
+
+    }catch(err){
+        console.log(err);
+        res.status(500).json({
+            message:"Delete failed"
+        });
+    }
+});
+
 module.exports = router;
