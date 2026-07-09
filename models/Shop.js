@@ -42,6 +42,27 @@ location: {
       required: true,
       index: true,
     },
+    floor: {
+  type: String,
+  enum: ["Ground", "Upper"],
+  default: "Ground",
+},
+
+wing: {
+  type: String,
+},
+
+block: {
+  type: Number,
+},
+
+row: {
+  type: String,
+},
+
+shopNumber: {
+  type: Number,
+},
 
     // Measurements
     length: {
