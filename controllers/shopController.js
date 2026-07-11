@@ -372,39 +372,56 @@ const getNavigation = async (req, res) => {
   try {
     const { shopType, wing, block } = req.params;
 
-    const wings = [
-      "A",
-      "B",
-      "C",
-      "D",
-      "E",
-      "F",
-      "G",
-      "H",
-    ];
+    const wings = ["A", "B", "C", "D", "E", "F", "G", "H"];
 
-    let currentWingIndex = wings.indexOf(wing);
-
-    let currentBlock = Number(block);
+    const currentWingIndex = wings.indexOf(wing);
+    const currentBlock = Number(block);
 
     let previous = null;
     let next = null;
 
-    let minBlock;
-    let maxBlock;
+    // ==========================================
+    // EXECUTIVE SHOPS
+    // Only Block 1: B01 and F01 in every wing
+    // Navigation: A1 → B1 → C1 → ... → H1
+    // ==========================================
+    if (shopType === "Executive") {
+      if (currentWingIndex > 0) {
+        previous = {
+          shopType,
+          wing: wings[currentWingIndex - 1],
+          block: 1,
+        };
+      }
 
-    if (shopType === "Standard") {
-      minBlock = 1;
-      maxBlock = 2;
-    } else if (shopType === "Premium") {
-      minBlock = 3;
-      maxBlock = 4;
-    } else {
-      minBlock = 5;
-      maxBlock = 6;
+      if (currentWingIndex < wings.length - 1) {
+        next = {
+          shopType,
+          wing: wings[currentWingIndex + 1],
+          block: 1,
+        };
+      }
+
+      return res.status(200).json({
+        success: true,
+        current: {
+          shopType,
+          wing,
+          block: 1,
+        },
+        previous,
+        next,
+      });
     }
 
-    // Previous
+    // ==========================================
+    // STANDARD AND PREMIUM SHOPS
+    // Navigate Blocks 1–6 across Wings A–H
+    // ==========================================
+    const minBlock = 1;
+    const maxBlock = 6;
+
+    // Previous block
     if (currentBlock > minBlock) {
       previous = {
         shopType,
@@ -419,7 +436,7 @@ const getNavigation = async (req, res) => {
       };
     }
 
-    // Next
+    // Next block
     if (currentBlock < maxBlock) {
       next = {
         shopType,
@@ -434,7 +451,7 @@ const getNavigation = async (req, res) => {
       };
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       current: {
         shopType,
@@ -445,7 +462,7 @@ const getNavigation = async (req, res) => {
       next,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
