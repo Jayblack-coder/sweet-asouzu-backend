@@ -14,7 +14,7 @@ const mediaSchema = new mongoose.Schema(
   trim: true,
   unique: true,
   sparse: true,
-  default: "",
+  default: undefined,
 },
 
     type: {
@@ -34,6 +34,18 @@ const mediaSchema = new mongoose.Schema(
       ],
       default: "general",
     },
+
+    galleryCategory: {
+  type: String,
+  enum: [
+    "Shops",
+    "Plaza Layout",
+    "Exterior",
+    "Interior",
+    "Facilities",
+  ],
+  default: "Shops",
+},
 
     url: {
       type: String,
