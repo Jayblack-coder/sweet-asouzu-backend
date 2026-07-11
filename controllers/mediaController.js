@@ -107,7 +107,32 @@ const getAllMedia = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Get published gallery media
+ * @route   GET /api/media/gallery
+ */
+const getGalleryMedia = async (req, res) => {
+  try {
+    const media = await Media.find({
+      category: "gallery",
+    }).sort({
+      order: 1,
+      createdAt: -1,
+    });
 
+    return res.status(200).json({
+      success: true,
+      media,
+    });
+  } catch (error) {
+    console.error("GET GALLERY MEDIA ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch gallery media",
+    });
+  }
+};
 /**
  * @desc    Get media by category
  * @route   GET /api/media/category/:category
@@ -365,4 +390,5 @@ module.exports = {
   updateMedia,
   reorderMedia,
   deleteMedia,
+    getGalleryMedia,
 };
